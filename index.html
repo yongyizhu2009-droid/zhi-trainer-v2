@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>职业培训师三级 · 通关宝典</title>
+<style>
+:root{--pri:#4F46E5;--pri-l:#E0E7FF;--acc:#F59E0B;--succ:#10B981;--succ-l:#D1FAE5;--err:#EF4444;--err-l:#FEE2E2;--bg:#F8FAFC;--card:#FFF;--t1:#1E293B;--t2:#64748B;--t3:#94A3B8;--r1:#DC2626;--r2:#EA580C;--r3:#CA8A04;--r4:#16A34A;--rad:10px;--nav:56px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;-webkit-tap-highlight-color:transparent}
+#app{max-width:500px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:calc(var(--nav)+20px)}
+.page{display:none;padding:16px 16px 24px}.page.on{display:block}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--card);position:sticky;top:0;z-index:90;border-bottom:1px solid #E2E8F0}
+.top-bar h1{font-size:17px;font-weight:700}
+.card{background:var(--card);border-radius:var(--rad);padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:none;border-radius:var(--rad);font-size:14px;font-weight:600;cursor:pointer;gap:4px}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--pri);color:#fff}.btn-o{background:transparent;border:2px solid var(--pri);color:var(--pri)}
+.btn-s{padding:6px 12px;font-size:12px}.btn-f{width:100%}
+.btn-g{background:var(--succ);color:#fff}.btn-r{background:var(--err);color:#fff}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.b1{background:#FEE2E2;color:var(--r1)}.b2{background:#FFEDD5;color:var(--r2)}.b3{background:#FEF9C3;color:var(--r3)}.b4{background:#DCFCE7;color:var(--r4)}
+.tab-row{display:flex;gap:0;border-radius:var(--rad);overflow:hidden;border:1px solid #E2E8F0;margin-bottom:12px}
+.tab-btn{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;background:var(--card);color:var(--t2);cursor:pointer;border:none;transition:all .2s}
+.tab-btn.on{background:var(--pri);color:#fff}
+.stat-row{display:flex;gap:10px;margin-bottom:10px}
+.stat-c{flex:1;background:var(--card);border-radius:var(--rad);padding:10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.stat-n{font-size:24px;font-weight:800;color:var(--pri)}.stat-l{font-size:11px;color:var(--t2)}
+.prog-bar{height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;margin:6px 0}
+.prog-fill{height:100%;background:var(--pri);border-radius:3px;transition:width .4s}
+.day-item{display:flex;align-items:center;padding:12px;background:var(--card);border-radius:var(--rad);margin-bottom:8px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);transition:transform .15s}
+.day-item:active{transform:scale(.98)}
+.day-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin-right:12px;flex-shrink:0}
+.day-num.locked{background:#E2E8F0;color:var(--t3)}.day-num.open{background:var(--pri-l);color:var(--pri)}.day-num.done{background:var(--succ-l);color:var(--succ)}
+.day-title{font-size:14px;font-weight:600}.day-sub{font-size:11px;color:var(--t2)}
+.sec-block{margin-bottom:12px;border-radius:var(--rad);overflow:hidden}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;font-weight:600;font-size:14px}
+.sec-hd:active{opacity:.8}
+.sec-bd{padding:0 12px 10px;display:none;font-size:13px;color:var(--t2);line-height:1.8}
+.sec-bd.open{display:block}
+.sec-items{padding:4px 0;margin:4px 0;border-left:3px solid var(--pri-l)}
+.sec-items li{padding:2px 8px;font-size:13px}
+.quiz-opt{display:flex;align-items:flex-start;padding:10px 12px;margin-bottom:6px;border-radius:var(--rad);cursor:pointer;border:2px solid #E2E8F0;font-size:14px;transition:all .15s}
+.quiz-opt:active{transform:scale(.98)}
+.quiz-opt.sel{border-color:var(--pri);background:var(--pri-l)}
+.quiz-opt.ok{border-color:var(--succ);background:var(--succ-l)}
+.quiz-opt.no{border-color:var(--err);background:var(--err-l)}
+.quiz-opt .letter{font-weight:700;margin-right:8px;min-width:20px}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--t1);color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;z-index:9999;display:none}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;background:var(--card);display:flex;border-top:1px solid #E2E8F0;z-index:200;height:var(--nav);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--t3);cursor:pointer;border:none;background:none;gap:2px}
+nav button.on{color:var(--pri)}
+nav button .ni{font-size:18px}
+.plain-box{background:#F1F5F9;border-radius:var(--rad);padding:10px;margin:6px 0;font-size:13px;color:var(--t2);line-height:1.7}
+input{width:100%;padding:10px;border:2px solid #E2E8F0;border-radius:var(--rad);font-size:14px;outline:none;margin-bottom:10px}
+input:focus{border-color:var(--pri)}
+.detail-text{font-size:13px;line-height:1.8;color:var(--t2);white-space:pre-line}
+.expand-btn{font-size:12px;color:var(--pri);cursor:pointer;padding:2px 0}
+.expand-btn:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- LOGIN -->
+<div class="page on" id="pg-login">
+  <div style="text-align:center;padding:50px 16px 30px">
+    <div style="font-size:48px;margin-bottom:12px">🧭</div>
+    <h1 style="font-size:22px;font-weight:800;margin-bottom:6px">职业培训师三级</h1>
+    <p style="color:var(--t2);font-size:13px">通关宝典 · 10天计划</p>
+    <p style="color:var(--t3);font-size:12px;margin-top:4px">考试倒计时 <strong id="exam-cd">--</strong> 天 · <span id="ver-tag" style="color:var(--pri)">v1</span></p>
+  </div>
+  <div class="card">
+    <label style="font-size:13px;font-weight:600;color:var(--t2)">你的昵称</label>
+    <input id="inp-name" placeholder="输入昵称即可开始" maxlength="10">
+    <button class="btn btn-p btn-f" id="btn-go">开始学习</button>
+    <p id="login-msg" style="font-size:11px;color:var(--t3);text-align:center;margin-top:10px">数据保存在本地浏览器 · 无需手机号</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="pg-dash">
+  <div class="top-bar"><h1>🏠 学习概览</h1><button class="btn btn-s btn-o" id="btn-logout">退出</button></div>
+  <div class="stat-row">
+    <div class="stat-c"><div class="stat-n" id="s-days">0</div><div class="stat-l">完成天数</div></div>
+    <div class="stat-c"><div class="stat-n" id="s-errs">0</div><div class="stat-l">错题数</div></div>
+    <div class="stat-c"><div class="stat-n" id="s-streak">0</div><div class="stat-l">连续天数</div></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,var(--pri),#7C3AED);color:#fff">
+    <div style="font-weight:700;font-size:15px">🎯 今日任务</div>
+    <div id="today-task" style="font-size:13px;margin-top:6px;opacity:.9">--</div>
+  </div>
+  <div id="dash-quick" style="margin-top:10px"></div>
+</div>
+
+<!-- DAYS LIST -->
+<div class="page" id="pg-days">
+  <div class="top-bar"><h1>📚 10天计划</h1></div>
+  <div id="days-list"></div>
+</div>
+
+<!-- DAY DETAIL -->
+<div class="page" id="pg-detail">
+  <div class="top-bar"><h1 id="detail-title">Day 1</h1><button class="btn btn-s btn-o" id="btn-back">← 返回</button></div>
+  <div id="detail-tabs" class="tab-row">
+    <button class="tab-btn on" data-t="lecture" onclick="swTab('lecture')">📖 讲义</button>
+    <button class="tab-btn" data-t="quiz" onclick="swTab('quiz')">✍️ 测验</button>
+    <button class="tab-btn" data-t="feynman" onclick="swTab('feynman')">🧠 费曼</button>
+  </div>
+  <div id="tab-lecture"></div>
+  <div id="tab-quiz" style="display:none"></div>
+  <div id="tab-feynman" style="display:none"></div>
+</div>
+
+<!-- ERRORS -->
+<div class="page" id="pg-errors">
+  <div class="top-bar"><h1>📋 错题专区</h1></div>
+  <div class="tab-row" id="err-tabs">
+    <button class="tab-btn on" onclick="swErrTab('dyn')">做题错题</button>
+    <button class="tab-btn" onclick="swErrTab('study')">📚 错题集学习</button>
+  </div>
+  <div id="err-dyn"></div>
+  <div id="err-study" style="display:none"></div>
+</div>
+
+<!-- BANK -->
+<div class="page" id="pg-bank">
+  <div class="top-bar"><h1>📖 题库</h1></div>
+  <div id="bank-list"></div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="pg-me">
+  <div class="top-bar"><h1>👤 我的</h1></div>
+  <div id="me-info" class="card"></div>
+  <div class="card">
+    <button class="btn btn-s btn-o" style="margin-right:8px" onclick="exportData()">📤 导出数据</button>
+    <button class="btn btn-s btn-o" onclick="importData()">📥 导入数据</button>
+    <button class="btn btn-s btn-r" style="margin-left:8px" onclick="resetData()">🗑 重置</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <button class="on" onclick="go('dash')"><span class="ni">🏠</span>首页</button>
+  <button onclick="go('days')"><span class="ni">📚</span>学习</button>
+  <button onclick="go('errors')"><span class="ni">📋</span>错题</button>
+  <button onclick="go('bank')"><span class="ni">📖</span>题库</button>
+  <button onclick="go('me')"><span class="ni">👤</span>我的</button>
+</nav>
+</div>
+
+<div id="toast-el" class="toast"></div>
+
+<script src="course_content_data.js"></script>
+<script>
+// ====== STATE ======
+var SK='zt_v2';var EXAM=new Date('2026-07-19');
+function LS(){try{return JSON.parse(localStorage.getItem(SK))||{}}catch(e){return{}}}
+function SS(s){try{localStorage.setItem(SK,JSON.stringify(s))}catch(e){showT('存储失败，请检查浏览器设置')}}
+var S=LS();
+if(!S.name)S.name='';
+if(!S.days)S.days={};
+if(!S.errors)S.errors=[];
+if(!S.streak)S.streak={last:'',cnt:0};
+if(!S.wrongStudy)S.wrongStudy={};
+
+function showT(m){var e=document.getElementById('toast-el');e.textContent=m;e.style.display='block';setTimeout(function(){e.style.display='none'},2200)}
+function cd(){var n=Math.ceil((EXAM-new Date())/(86400000));return n>0?n:0}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function stripL(o){return (o||'').replace(/^[A-Da-d]\.\s*/,'')}
+
+// ====== NAV ======
+var curDay=1;
+function go(p,d){
+  if(!S.name&&p!=='login'){go('login');return}
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('on')});
+  var t=document.getElementById('pg-'+p);
+  if(t)t.classList.add('on');
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('on')});
+  document.querySelectorAll('nav button').forEach(function(b){if(b.textContent.includes(p==='dash'?'首页':p==='days'?'学习':p==='errors'?'错题':p==='bank'?'题库':'我的'))b.classList.add('on')});
+  if(p==='dash')renderDash();
+  if(p==='days')renderDays();
+  if(p==='errors')renderErr();
+  if(p==='bank')renderBank();
+  if(p==='me')renderMe();
+  if(p==='detail'&&d){curDay=d;renderDetail(d)}
+}
+window.go=go;
+
+// ====== LOGIN ======
+document.getElementById('btn-go').addEventListener('click',function(){
+  try{
+    var n=document.getElementById('inp-name').value.trim();
+    if(!n){showT('请输入昵称');return}
+    S.name=n;
+    var t=todayStr();
+    if(S.streak.last!==t){
+      var y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+      if(S.streak.last===y)S.streak.cnt++;else S.streak.cnt=1;
+      S.streak.last=t;
+    }
+    SS(S);go('dash');
+  }catch(err){showT('出错:'+err.message)}
+});
+document.getElementById('btn-logout').addEventListener('click',function(){S.name='';SS(S);go('login')});
+document.getElementById('btn-back').addEventListener('click',function(){go('days')});
+
+// ====== DASHBOARD ======
+function renderDash(){
+  var dc=0;for(var k in S.days)if(S.days[k]&&S.days[k].quizDone)dc++;
+  document.getElementById('s-days').textContent=dc+'/10';
+  document.getElementById('s-errs').textContent=S.errors.length;
+  document.getElementById('s-streak').textContent=S.streak.cnt;
+  document.getElementById('today-task').textContent=dc<10?'完成 Day '+((dc||1))+' 的讲义+测验':'🎉 全部通关！继续翻滚复习';
+  var h='<button class="btn btn-p btn-f" style="margin-bottom:8px" onclick="go(\'days\')">📚 开始/继续学习</button>';
+  if(S.errors.length>0)h+='<button class="btn btn-o btn-f" onclick="go(\'errors\')">📋 查看错题('+S.errors.length+'题)</button>';
+  document.getElementById('dash-quick').innerHTML=h;
+}
+
+// ====== DAYS LIST ======
+function renderDays(){
+  var D=COURSE_DATA.days;var h='';
+  for(var i=0;i<D.length;i++){
+    var d=D[i];var id=d.id;
+    var st=S.days[id];
+    var prog=st?(st.lectureRead?1:0)+(st.quizDone?1:0)+(st.feynmanDone?1:0):0;
+    var cls=prog>=3?'done':prog>0||id<=1?'open':'locked';
+    h+='<div class="day-item" onclick="go(\'detail\','+id+')">';
+    h+='<div class="day-num '+cls+'">'+id+'</div>';
+    h+='<div><div class="day-title">'+d.title+'</div>';
+    h+='<div class="day-sub">'+(cls==='done'?'✅ 已完成':cls==='open'?'进度 '+prog+'/3':'🔒 先完成前一天')+'</div></div></div>';
+  }
+  document.getElementById('days-list').innerHTML=h;
+}
+
+// ====== DETAIL ======
+function swTab(t){
+  document.querySelectorAll('#detail-tabs .tab-btn').forEach(function(b){b.classList.remove('on');if(b.dataset.t===t)b.classList.add('on')});
+  document.getElementById('tab-lecture').style.display=t==='lecture'?'block':'none';
+  document.getElementById('tab-quiz').style.display=t==='quiz'?'block':'none';
+  document.getElementById('tab-feynman').style.display=t==='feynman'?'block':'none';
+  if(t==='feynman')renderFeynman(curDay);
+}
+window.swTab=swTab;
+
+function renderDetail(id){
+  var D=COURSE_DATA.days.find(function(d){return d.id===id});
+  if(!D){showT('数据加载异常');return}
+  document.getElementById('detail-title').textContent=D.title;
+  if(!S.days[id])S.days[id]={lectureRead:false,quizDone:false,quizScore:0,quizAns:{},feynmanDone:false,feynmanAns:''};
+  SS(S);
+  renderLecture(D);
+  renderQuiz(D);
+  swTab('lecture');
+}
+
+// ====== LECTURE ======
+function renderLecture(D){
+  var h='<div class="plain-box">💡 '+D.bigPicture+'</div>';
+  var secs=D.lecture.sections;
+  for(var i=0;i<secs.length;i++){
+    var s=secs[i];
+    var bc=s.level==='🔴必背'?'b1':s.level==='🟠重点难点'?'b2':s.level==='🟡次重点'?'b3':'b4';
+    var bc2=s.level==='🔴必背'?'var(--r1)':s.level==='🟠重点难点'?'var(--r2)':s.level==='🟡次重点'?'var(--r3)':'var(--r4)';
+    h+='<div class="sec-block">';
+    h+='<div class="sec-hd" style="background:'+bc2+'11" onclick="toggleSec('+i+')"><span><span class="badge '+bc+'">'+s.level+'</span> '+s.title+'</span><span id="sec-arr-'+i+'" style="font-size:12px">▼</span></div>';
+    h+='<div class="sec-bd" id="sec-bd-'+i+'">';
+    if(s.plainLang)h+='<div class="plain-box">'+s.plainLang+'</div>';
+    if(s.items&&s.items.length){
+      h+='<ol class="sec-items">';
+      for(var j=0;j<s.items.length;j++)h+='<li>'+s.items[j]+'</li>';
+      h+='</ol>';
+    }
+    if(s.detail)h+='<div class="expand-btn" onclick="toggleDetail('+i+')">📝 展开详解 ▼</div><div id="sec-det-'+i+'" style="display:none" class="detail-text">'+s.detail+'</div>';
+    h+='</div></div>';
+  }
+  h+='<button class="btn btn-g btn-f" style="margin-top:10px" onclick="markLecture('+D.id+')">✅ 讲义已读完</button>';
+  document.getElementById('tab-lecture').innerHTML=h;
+}
+function toggleSec(i){
+  var bd=document.getElementById('sec-bd-'+i);
+  var arr=document.getElementById('sec-arr-'+i);
+  if(bd.classList.contains('open')){bd.classList.remove('open');arr.textContent='▼'}
+  else{bd.classList.add('open');arr.textContent='▲'}
+}
+window.toggleSec=toggleSec;
+function toggleDetail(i){
+  var d=document.getElementById('sec-det-'+i);
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+window.toggleDetail=toggleDetail;
+function markLecture(id){
+  if(S.days[id])S.days[id].lectureRead=true;
+  SS(S);showT('讲义已标记完成！');renderDays();
+}
+window.markLecture=markLecture;
+
+// ====== QUIZ ======
+var quizIdx=0;var quizAns={};var quizDone=false;
+function renderQuiz(D){
+  var qs=D.tests||[];
+  if(!qs.length){document.getElementById('tab-quiz').innerHTML='<p style="color:var(--t2)">本日暂无测验题</p>';return}
+  var st=S.days[D.id];
+  if(st&&st.quizDone){
+    var h='<div class="card" style="background:var(--succ-l);text-align:center">';
+    h+='<div style="font-size:20px;font-weight:800;color:var(--succ)">✅ 测验已完成</div>';
+    h+='<div style="font-size:14px;color:var(--t2)">得分：'+st.quizScore+'/'+qs.length+'</div>';
+    h+='<button class="btn btn-o btn-s" style="margin-top:8px" onclick="redoQuiz('+D.id+')">🔄 重做</button>';
+    h+='</div>';
+    // Show review
+    h+='<div style="margin-top:8px">';
+    for(var i=0;i<qs.length;i++){
+      var q=qs[i];
+      var ua=st.quizAns[i];
+      var ok=ua===q.correct;
+      h+='<div class="card" style="'+(ok?'':'border:2px solid var(--err-l)')+'">';
+      h+='<div style="font-size:13px;font-weight:600">'+(i+1)+'. '+q.question+'</div>';
+      if(ua>=0){
+        var uOpt=q.options[ua]||'';
+        var cOpt=q.options[q.correct]||'';
+        h+='<div style="font-size:12px;color:'+((ok?'var(--succ)':'var(--err)'))+';margin-top:4px">';
+        h+=(ok?'✅':'❌')+' 你的答案：'+String.fromCharCode(65+ua)+'. '+stripL(uOpt)+'</div>';
+        if(!ok)h+='<div style="font-size:12px;color:var(--succ)">✅ 正确答案：'+String.fromCharCode(65+q.correct)+'. '+stripL(cOpt)+'</div>';
+      }
+      h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+q.explanation+'</div>';
+      h+='</div>';
+    }
+    h+='</div>';
+    document.getElementById('tab-quiz').innerHTML=h;
+    return;
+  }
+  quizIdx=0;quizAns={};quizDone=false;
+  renderQuizQ(D,0);
+}
+function renderQuizQ(D,idx){
+  var qs=D.tests;
+  if(idx>=qs.length){finishQuiz(D);return}
+  var q=qs[idx];
+  var h='<div style="font-size:13px;color:var(--t2);margin-bottom:6px">题目 '+((idx+1))+'/'+qs.length+(q.type==='multi'?' · 多选':' · 单选')+'</div>';
+  h+='<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
+  for(var i=0;i<q.options.length;i++){
+    var sel=quizAns[idx]===i;
+    h+='<div class="quiz-opt'+(sel?' sel':'')+'" onclick="pickAns('+idx+','+i+')">';
+    h+='<span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+stripL(q.options[i])+'</span></div>';
+  }
+  if(q.type==='multi')h+='<div style="font-size:11px;color:var(--t3);margin-top:4px">⚠️ 多选题请逐个选择后点击确认</div>';
+  h+='<div style="margin-top:10px">';
+  if(idx>0)h+='<button class="btn btn-s btn-o" onclick="renderQuizQ(COURSE_DATA.days.find(function(d){return d.id===' +D.id+ '}),' +(idx-1)+')">← 上一题</button> ';
+  h+='<button class="btn btn-p btn-s" onclick="nextQuizQ('+D.id+','+idx+')">下一题 →</button>';
+  h+='</div>';
+  document.getElementById('tab-quiz').innerHTML=h;
+}
+window.renderQuizQ=renderQuizQ;
+function pickAns(idx,ans){
+  quizAns[idx]=ans;
+  // refresh display
+  var D=COURSE_DATA.days.find(function(d){return d.id===curDay});
+  renderQuizQ(D,idx);
+}
+window.pickAns=pickAns;
+function nextQuizQ(dayId,idx){
+  if(quizAns[idx]===undefined){showT('请先选择答案');return}
+  var D=COURSE_DATA.days.find(function(d){return d.id===dayId});
+  if(idx+1>=D.tests.length){finishQuiz(D)}
+  else{renderQuizQ(D,idx+1)}
+}
+window.nextQuizQ=nextQuizQ;
+function finishQuiz(D){
+  var qs=D.tests;var sc=0;
+  for(var i=0;i<qs.length;i++){
+    if(quizAns[i]===qs[i].correct)sc++;
+    else if(quizAns[i]>=0){
+      S.errors.push({dayId:D.id,qIdx:i,userAns:quizAns[i],correctAns:qs[i].correct,question:qs[i].question,options:qs[i].options,explanation:qs[i].explanation,date:todayStr()});
+    }
+  }
+  S.days[D.id].quizDone=true;S.days[D.id].quizScore=sc;S.days[D.id].quizAns=quizAns;
+  SS(S);
+  showT('测验完成！得分 '+sc+'/'+qs.length);
+  renderQuiz(D);
+}
+function redoQuiz(id){
+  S.days[id].quizDone=false;S.days[id].quizScore=0;S.days[id].quizAns={};
+  SS(S);
+  var D=COURSE_DATA.days.find(function(d){return d.id===id});
+  quizIdx=0;quizAns={};renderQuizQ(D,0);
+}
+window.redoQuiz=redoQuiz;
+
+// ====== FEYNMAN ======
+function renderFeynman(id){
+  var D=COURSE_DATA.days.find(function(d){return d.id===id});
+  if(!D||!D.feynman){document.getElementById('tab-feynman').innerHTML='<p style="color:var(--t2)">本日暂无费曼挑战</p>';return}
+  var f=D.feynman;
+  var st=S.days[id];
+  if(st&&st.feynmanDone){
+    var h='<div class="card" style="background:var(--succ-l)"><div style="font-weight:700;color:var(--succ)">✅ 费曼挑战已完成</div>';
+    h+='<div style="font-size:13px;color:var(--t2);margin-top:6px">你的回答：'+(st.feynmanAns||'')+'</div></div>';
+    document.getElementById('tab-feynman').innerHTML=h;return;
+  }
+  var h='<div class="card" style="background:#F1F5F9">';
+  h+='<div style="font-weight:700">🧑 '+f.rookieName+' 的场景</div>';
+  h+='<div style="font-size:13px;color:var(--t2);margin-top:4px">'+f.rookieScene+'</div></div>';
+  h+='<div class="card"><div style="font-weight:700">💬 '+f.rookieName+' 问你：</div>';
+  h+='<div style="font-size:14px;margin-top:4px">'+f.openingQuestion+'</div></div>';
+  h+='<div style="font-size:13px;color:var(--t2);margin-bottom:6px">📌 需覆盖的知识点：'+f.expectedCoverage.join('、')+'</div>';
+  h+='<textarea id="feynman-input" style="width:100%;height:120px;border:2px solid #E2E8F0;border-radius:var(--rad);padding:10px;font-size:14px;outline:none" placeholder="用大白话回答他..."></textarea>';
+  h+='<button class="btn btn-p btn-f" style="margin-top:8px" onclick="submitFeynman('+id+')">提交回答</button>';
+  document.getElementById('tab-feynman').innerHTML=h;
+}
+function submitFeynman(id){
+  var txt=document.getElementById('feynman-input').value.trim();
+  if(!txt){showT('请输入你的回答');return}
+  S.days[id].feynmanDone=true;S.days[id].feynmanAns=txt;
+  SS(S);showT('费曼挑战完成！');renderFeynman(id);
+}
+window.submitFeynman=submitFeynman;
+
+// ====== ERRORS ======
+var errTab='dyn';
+function swErrTab(t){
+  errTab=t;
+  document.querySelectorAll('#err-tabs .tab-btn').forEach(function(b){b.classList.remove('on')});
+  if(t==='dyn')document.querySelector('#err-tabs .tab-btn:first-child').classList.add('on');
+  else document.querySelector('#err-tabs .tab-btn:last-child').classList.add('on');
+  document.getElementById('err-dyn').style.display=t==='dyn'?'block':'none';
+  document.getElementById('err-study').style.display=t==='study'?'block':'none';
+  renderErr();
+}
+window.swErrTab=swErrTab;
+function renderErr(){
+  if(errTab==='dyn')renderDynErr();
+  else renderStudyErr();
+}
+function renderDynErr(){
+  var errs=S.errors;
+  if(!errs.length){document.getElementById('err-dyn').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无做题错题 🎉</div>';return}
+  var h='';
+  for(var i=0;i<errs.length;i++){
+    var e=errs[i];
+    var ok=e.userAns===e.correctAns;
+    h+='<div class="card">';
+    h+='<div style="font-size:13px;font-weight:600">'+e.question+'</div>';
+    if(e.userAns>=0)h+='<div style="font-size:12px;color:var(--err);margin-top:4px">❌ 你的答案：'+String.fromCharCode(65+e.userAns)+'. '+stripL(e.options[e.userAns])+'</div>';
+    h+='<div style="font-size:12px;color:var(--succ);margin-top:2px">✅ 正确答案：'+String.fromCharCode(65+e.correctAns)+'. '+stripL(e.options[e.correctAns])+'</div>';
+    if(e.explanation)h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+e.explanation+'</div>';
+    h+='</div>';
+  }
+  h+='<button class="btn btn-r btn-f" style="margin-top:8px" onclick="clearErrors()">清除错题记录</button>';
+  document.getElementById('err-dyn').innerHTML=h;
+}
+function clearErrors(){S.errors=[];SS(S);showT('错题已清除');renderErr()}
+window.clearErrors=clearErrors;
+
+// ====== WRONG ANSWER STUDY ======
+var wsIdx=0;var wsQIdx=0;var wsAns=-1;var wsPhase='list';
+function renderStudyErr(){
+  var sets=COURSE_DATA.wrongAnswerSets||[];
+  if(!sets.length){document.getElementById('err-study').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无错题集数据</div>';return}
+  if(wsPhase==='list'){
+    var h='';
+    for(var i=0;i<sets.length;i++){
+      var s=sets[i];
+      var prog=S.wrongStudy[i]||{done:0,mastered:0,review:0};
+      var pct=Math.round(prog.done/s.questions.length*100);
+      h+='<div class="card">';
+      h+='<div style="font-weight:700;font-size:14px">'+s.title+'</div>';
+      h+='<div style="font-size:12px;color:var(--t2)">'+s.description+'</div>';
+      h+='<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div>';
+      h+='<div style="font-size:11px;color:var(--t3)">进度 '+prog.done+'/'+s.questions.length+' · 已掌握 '+prog.mastered+'</div>';
+      h+='<button class="btn btn-p btn-s" style="margin-top:8px" onclick="openWS('+i+')">开始学习</button>';
+      h+='</div>';
+    }
+    document.getElementById('err-study').innerHTML=h;
+  } else if(wsPhase==='quiz'){
+    renderWSQuiz();
+  }
+}
+function openWS(si){
+  wsIdx=si;wsQIdx=0;wsAns=-1;wsPhase='quiz';
+  renderStudyErr();
+}
+window.openWS=openWS;
+function renderWSQuiz(){
+  var set=COURSE_DATA.wrongAnswerSets[wsIdx];
+  var qs=set.questions;
+  if(wsQIdx>=qs.length){wsPhase='list';renderStudyErr();return}
+  var q=qs[wsQIdx];
+  var st=S.wrongStudy[wsIdx]||{done:0,mastered:0,review:0,items:{}};
+  if(wsAns>=0){
+    // show result
+    var ok=wsAns===q.correctAnswer;
+    var h='<div class="card" style="'+(ok?'background:var(--succ-l)':'background:var(--err-l)')+'">';
+    h+='<div style="font-weight:700;font-size:15px">'+(ok?'✅ 正确！':'❌ 错误')+'</div>';
+    h+='<div style="font-size:13px;margin-top:4px">'+q.question+'</div>';
+    if(!ok){
+      h+='<div style="font-size:12px;color:var(--err)">你的答案：'+String.fromCharCode(65+wsAns)+'. '+q.options[wsAns]+'</div>';
+      h+='<div style="font-size:12px;color:var(--succ)">正确答案：'+String.fromCharCode(65+q.correctAnswer)+'. '+q.options[q.correctAnswer]+'</div>';
+    }
+    h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+q.explanation+'</div>';
+    h+='<div style="margin-top:10px">';
+    h+='<button class="btn btn-g btn-s" onclick="markWS('+wsIdx+','+wsQIdx+',1)">✅ 已掌握</button> ';
+    h+='<button class="btn btn-o btn-s" onclick="markWS('+wsIdx+','+wsQIdx+',0)">🔄 需复习</button>';
+    h+='</div></div>';
+    document.getElementById('err-study').innerHTML=h;
+  } else {
+    var h='<div style="font-size:12px;color:var(--t2);margin-bottom:6px">题目 '+((wsQIdx+1))+'/'+qs.length+'</div>';
+    h+='<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
+    for(var i=0;i<q.options.length;i++){
+      h+='<div class="quiz-opt" onclick="pickWS('+i+')">';
+      h+='<span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+q.options[i]+'</span></div>';
+    }
+    document.getElementById('err-study').innerHTML=h;
+  }
+}
+function pickWS(ans){wsAns=ans;renderWSQuiz()}
+window.pickWS=pickWS;
+function markWS(si,qi,mastered){
+  if(!S.wrongStudy[si])S.wrongStudy[si]={done:0,mastered:0,review:0,items:{}};
+  S.wrongStudy[si].done++;
+  if(mastered)S.wrongStudy[si].mastered++;else S.wrongStudy[si].review++;
+  S.wrongStudy[si].items[qi]=mastered?'m':'r';
+  SS(S);
+  wsQIdx++;wsAns=-1;
+  renderWSQuiz();
+}
+window.markWS=markWS;
+
+// ====== BANK ======
+function renderBank(){
+  var sets=COURSE_DATA.wrongAnswerSets||[];
+  if(!sets.length){document.getElementById('bank-list').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无题库数据</div>';return}
+  var h='';
+  for(var i=0;i<sets.length;i++){
+    var s=sets[i];var total=s.questions.length;
+    var prog=S.wrongStudy[i]||{done:0};
+    h+='<div class="card">';
+    h+='<div style="font-weight:700">'+s.title+'</div>';
+    h+='<div style="font-size:12px;color:var(--t2)">共'+total+'题 · 已学'+prog.done+'题</div>';
+    h+='<button class="btn btn-p btn-s" style="margin-top:8px" onclick="go(\'errors\');swErrTab(\'study\');openWS('+i+')">进入学习</button>';
+    h+='</div>';
+  }
+  document.getElementById('bank-list').innerHTML=h;
+}
+
+// ====== PROFILE ======
+function renderMe(){
+  document.getElementById('me-info').innerHTML='<p><strong>学员：</strong>'+S.name+'</p><p><strong>连续学习：</strong>'+S.streak.cnt+'天</p><p><strong>完成天数：</strong>'+Object.keys(S.days).filter(function(k){return S.days[k].quizDone}).length+'/10</p>';
+}
+function exportData(){
+  var d=JSON.stringify(S);
+  var b=new Blob([d],{type:'application/json'});
+  var u=URL.createObjectURL(b);
+  var a=document.createElement('a');a.href=u;a.download='zt_data_'+todayStr()+'.json';a.click();
+  showT('数据已导出');
+}
+window.exportData=exportData;
+function importData(){
+  var inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=function(){
+    var f=inp.files[0];var r=new FileReader();
+    r.onload=function(){
+      try{var d=JSON.parse(r.result);S=d;SS(S);showT('数据已导入');go('dash')}
+      catch(e){showT('文件格式错误')}
+    };r.readAsText(f);
+  };inp.click();
+}
+window.importData=importData;
+function resetData(){
+  if(confirm('确认重置所有数据？不可恢复！')){S={name:S.name,days:{},errors:[],streak:{last:'',cnt:0},wrongStudy:{}};SS(S);showT('已重置');go('dash')}
+}
+window.resetData=resetData;
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded',function(){
+  try{
+    document.getElementById('exam-cd').textContent=cd();
+    var vt=document.getElementById('ver-tag');if(vt)vt.style.color='#10B981';
+    if(S.name)go('dash');else go('login');
+  }catch(e){
+    var lm=document.getElementById('login-msg');
+    if(lm)lm.textContent='初始化错误: '+e.message;
+    showT('页面加载出错，请刷新');
+  }
+});
+</script>
+</body>
+</html>
