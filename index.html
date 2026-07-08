@@ -131,6 +131,12 @@ input:focus{border-color:var(--pri)}
   <div id="bank-list"></div>
 </div>
 
+<!-- SHORT ANSWER -->
+<div class="page" id="pg-sa">
+  <div class="top-bar"><h1>📝 简答题通关</h1></div>
+  <div id="sa-list"></div>
+</div>
+
 <!-- PROFILE -->
 <div class="page" id="pg-me">
   <div class="top-bar"><h1>👤 我的</h1></div>
@@ -148,6 +154,7 @@ input:focus{border-color:var(--pri)}
   <button onclick="go('days')"><span class="ni">📚</span>学习</button>
   <button onclick="go('errors')"><span class="ni">📋</span>错题</button>
   <button onclick="go('bank')"><span class="ni">📖</span>题库</button>
+  <button onclick="go('sa')"><span class="ni">📝</span>简答</button>
   <button onclick="go('me')"><span class="ni">👤</span>我的</button>
 </nav>
 </div>
@@ -166,6 +173,7 @@ if(!S.days)S.days={};
 if(!S.errors)S.errors=[];
 if(!S.streak)S.streak={last:'',cnt:0};
 if(!S.wrongStudy)S.wrongStudy={};
+if(!S.saState)S.saState={};
 
 function showT(m){var e=document.getElementById('toast-el');e.textContent=m;e.style.display='block';setTimeout(function(){e.style.display='none'},2200)}
 function cd(){var n=Math.ceil((EXAM-new Date())/(86400000));return n>0?n:0}
@@ -186,11 +194,12 @@ function go(p,d){
   var t=document.getElementById('pg-'+p);
   if(t)t.classList.add('on');
   document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('on')});
-  document.querySelectorAll('nav button').forEach(function(b){if(b.textContent.includes(p==='dash'?'首页':p==='days'?'学习':p==='errors'?'错题':p==='bank'?'题库':'我的'))b.classList.add('on')});
+  document.querySelectorAll('nav button').forEach(function(b){if(b.textContent.includes(p==='dash'?'首页':p==='days'?'学习':p==='errors'?'错题':p==='bank'?'题库':p==='sa'?'简答':'我的'))b.classList.add('on')});
   if(p==='dash')renderDash();
   if(p==='days')renderDays();
   if(p==='errors')renderErr();
   if(p==='bank')renderBank();
+  if(p==='sa')renderSA();
   if(p==='me')renderMe();
   if(p==='detail'&&d){curDay=d;renderDetail(d)}
 }
@@ -222,6 +231,7 @@ function renderDash(){
   document.getElementById('s-streak').textContent=S.streak.cnt;
   document.getElementById('today-task').textContent=dc<10?'完成 Day '+((dc||1))+' 的讲义+测验':'🎉 全部通关！继续翻滚复习';
   var h='<button class="btn btn-p btn-f" style="margin-bottom:8px" onclick="go(\'days\')">📚 开始/继续学习</button>';
+  h+='<button class="btn btn-p btn-f" style="margin-bottom:8px" onclick="go(\'sa\')">📝 简答题通关(27)</button>';
   if(S.errors.length>0)h+='<button class="btn btn-o btn-f" onclick="go(\'errors\')">📋 查看错题('+S.errors.length+'题)</button>';
   document.getElementById('dash-quick').innerHTML=h;
 }
@@ -705,6 +715,62 @@ function resetData(){
   if(confirm('确认重置所有数据？不可恢复！')){S={name:S.name,days:{},errors:[],streak:{last:'',cnt:0},wrongStudy:{}};SS(S);showT('已重置');go('dash')}
 }
 window.resetData=resetData;
+
+// ====== SHORT ANSWER (简答题通关) ======
+var saIdx=-1;
+function mdLite(s){return (s||'').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')}
+function renderSA(){
+  var items=COURSE_DATA.shortAnswerBank||[];
+  if(!items.length){document.getElementById('sa-list').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无简答题</div>';return}
+  var m=0,r=0;
+  for(var i=0;i<items.length;i++){var st=S.saState[i];if(st==='m')m++;else if(st==='r')r++}
+  var h='<div class="card" style="background:var(--pri-l)"><div style="font-weight:700">📝 简答题通关 · 共'+items.length+'题</div><div style="font-size:12px;color:var(--t2);margin-top:4px">先默写要点 → 看命中率 → 翻老师记忆口诀。标⭐的是老师原话口诀/必背点。已掌握 '+m+' · 需复习 '+r+'</div></div>';
+  for(var i=0;i<items.length;i++){
+    var it=items[i];var st=S.saState[i];
+    var badge=st==='m'?'<span style="color:var(--succ)">✅已掌握</span>':st==='r'?'<span style="color:var(--err)">🔄需复习</span>':'<span style="color:var(--t2)">未作答</span>';
+    h+='<div class="card">';
+    h+='<div style="font-weight:600">'+it.id+'. '+it.question+'</div>';
+    h+='<div style="font-size:12px;margin:4px 0 8px">'+badge+(it.module?' · '+it.module:'')+(it.hasTeacherTip?' · ⭐老师口诀':'')+'</div>';
+    h+='<button class="btn btn-p btn-s" onclick="saOpen('+i+')">'+(st?'重做':'作答')+'</button>';
+    if(st)h+=' <button class="btn btn-o btn-s" onclick="saClear('+i+')">清除标记</button>';
+    h+='</div>';
+  }
+  document.getElementById('sa-list').innerHTML=h;
+}
+window.renderSA=renderSA;
+function saOpen(idx){
+  saIdx=idx;var it=COURSE_DATA.shortAnswerBank[idx];
+  var h='<div class="card"><div style="font-weight:700">'+it.id+'. '+it.question+'</div></div>';
+  h+='<textarea id="sa-input" rows="6" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid #ddd;font-size:14px;box-sizing:border-box" placeholder="默写要点，至少写关键词…"></textarea>';
+  h+='<div style="margin-top:8px"><button class="btn btn-p btn-f" onclick="saSubmit()">提交并看命中率</button> <button class="btn btn-o btn-s" onclick="renderSA()">← 返回列表</button></div>';
+  h+='<div id="sa-result"></div>';
+  document.getElementById('sa-list').innerHTML=h;
+  var ta=document.getElementById('sa-input');if(ta)ta.focus();
+}
+window.saOpen=saOpen;
+function saSubmit(){
+  if(saIdx<0)return;
+  var it=COURSE_DATA.shortAnswerBank[saIdx];
+  var txt=(document.getElementById('sa-input').value||'');
+  if(txt.trim().length<2){showT('先写点内容再提交');return}
+  var pts=it.scoringPoints||[];var hit=0;var miss=[];
+  for(var i=0;i<pts.length;i++){if(txt.indexOf(pts[i])>=0)hit++;else miss.push(pts[i])}
+  var rate=pts.length?hit/pts.length:0;var pass=rate>=0.6;
+  var h='<div class="card" style="'+(pass?'background:var(--succ-l)':'background:var(--err-l)')+'">';
+  h+='<div style="font-weight:700">命中率 '+Math.round(rate*100)+'% · '+(pass?'✅ 基本掌握':'❌ 还需加强')+'</div>';
+  h+='<div style="font-size:12px;margin-top:4px">踩中 '+hit+'/'+pts.length+' 个要点'+(miss.length?' · 漏：'+miss.join('、'):'')+'</div></div>';
+  h+='<div class="card"><div style="font-weight:700">📖 参考答案要点</div><div style="font-size:13px;margin-top:4px">'+mdLite(it.referenceAnswer)+'</div></div>';
+  h+='<div class="card" style="background:#FFF7E6"><div style="font-weight:700">💡 老师记忆点'+(it.hasTeacherTip?'（原话口诀）':'（助记钩子）')+'</div><div style="font-size:13px;margin-top:4px">'+mdLite(it.plainLang)+'</div>'+(it.note?'<div style="font-size:11px;color:var(--t2);margin-top:6px">⚠️ '+it.note+'</div>':'')+'</div>';
+  h+='<div style="margin:10px 0"><button class="btn btn-g btn-s" onclick="saMark('+saIdx+',\'m\')">✅ 已掌握</button> <button class="btn btn-o btn-s" onclick="saMark('+saIdx+',\'r\')">🔄 需复习</button> <button class="btn btn-p btn-s" onclick="saNext()">下一题 →</button></div>';
+  document.getElementById('sa-result').innerHTML=h;
+}
+window.saSubmit=saSubmit;
+function saMark(idx,v){S.saState[idx]=v;SS(S);showT(v==='m'?'已标记掌握':'已标记需复习');renderSA()}
+window.saMark=saMark;
+function saClear(idx){delete S.saState[idx];SS(S);renderSA()}
+window.saClear=saClear;
+function saNext(){if(saIdx<0)return;var n=saIdx+1;if(n>=COURSE_DATA.shortAnswerBank.length){showT('已是最后一题');renderSA();return}saOpen(n)}
+window.saNext=saNext;
 
 // ====== INIT ======
 document.addEventListener('DOMContentLoaded',function(){
