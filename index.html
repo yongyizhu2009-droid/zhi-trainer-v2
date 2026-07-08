@@ -171,6 +171,12 @@ function showT(m){var e=document.getElementById('toast-el');e.textContent=m;e.st
 function cd(){var n=Math.ceil((EXAM-new Date())/(86400000));return n>0?n:0}
 function todayStr(){return new Date().toISOString().slice(0,10)}
 function stripL(o){return (o||'').replace(/^[A-Da-d]\.\s*/,'')}
+// ===== multi-select helpers =====
+function isMulti(q){return Array.isArray(q.correctAnswer)}
+function ansEq(a,b){if(Array.isArray(a)&&Array.isArray(b)){if(a.length!==b.length)return false;var x=a.slice().sort(),y=b.slice().sort();for(var i=0;i<x.length;i++)if(x[i]!==y[i])return false;return true}return a===b}
+function corrDetail(q){if(isMulti(q))return q.correctAnswer.slice().sort().map(function(i){return String.fromCharCode(65+i)+'. '+q.options[i]}).join('；');return String.fromCharCode(65+q.correctAnswer)+'. '+q.options[q.correctAnswer]}
+function ansDetail(q,ans){if(Array.isArray(ans))return ans.slice().sort().map(function(i){return String.fromCharCode(65+i)+'. '+q.options[i]}).join('；');if(ans>=0)return String.fromCharCode(65+ans)+'. '+q.options[ans];return '—'}
+function corrDetailStored(ca,opts){if(Array.isArray(ca))return ca.slice().sort().map(function(i){return String.fromCharCode(65+i)+'. '+stripL(opts[i])}).join('；');return String.fromCharCode(65+ca)+'. '+stripL(opts[ca])}
 
 // ====== NAV ======
 var curDay=1;
@@ -446,7 +452,7 @@ function renderDynErr(){
     h+='<div class="card">';
     h+='<div style="font-size:13px;font-weight:600">'+e.question+'</div>';
     if(e.userAns>=0)h+='<div style="font-size:12px;color:var(--err);margin-top:4px">❌ 你的答案：'+String.fromCharCode(65+e.userAns)+'. '+stripL(e.options[e.userAns])+'</div>';
-    h+='<div style="font-size:12px;color:var(--succ);margin-top:2px">✅ 正确答案：'+String.fromCharCode(65+e.correctAns)+'. '+stripL(e.options[e.correctAns])+'</div>';
+    h+='<div style="font-size:12px;color:var(--succ);margin-top:2px">✅ 正确答案：'+corrDetailStored(e.correctAns,e.options)+'</div>';
     if(e.explanation)h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+e.explanation+'</div>';
     h+='</div>';
   }
@@ -457,7 +463,7 @@ function clearErrors(){S.errors=[];SS(S);showT('错题已清除');renderErr()}
 window.clearErrors=clearErrors;
 
 // ====== WRONG ANSWER STUDY ======
-var wsIdx=0;var wsQIdx=0;var wsAns=-1;var wsPhase='list';
+var wsIdx=0;var wsQIdx=0;var wsAns=-1;var wsSel=[];var wsPhase='list';
 function renderStudyErr(){
   var sets=COURSE_DATA.wrongAnswerSets||[];
   if(!sets.length){document.getElementById('err-study').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无错题集数据</div>';return}
@@ -482,7 +488,7 @@ function renderStudyErr(){
   }
 }
 function openWS(si){
-  wsIdx=si;wsQIdx=0;wsAns=-1;wsPhase='quiz';
+  wsIdx=si;wsQIdx=0;wsAns=-1;wsSel=[];wsPhase='quiz';
   renderStudyErr();
 }
 window.openWS=openWS;
@@ -491,16 +497,17 @@ function renderWSQuiz(){
   var qs=set.questions;
   if(wsQIdx>=qs.length){wsPhase='list';renderStudyErr();return}
   var q=qs[wsQIdx];
+  var multi=isMulti(q);
   var st=S.wrongStudy[wsIdx]||{done:0,mastered:0,review:0,items:{}};
-  if(wsAns>=0){
-    // show result
-    var ok=wsAns===q.correctAnswer;
+  var answered=multi?(wsAns&&wsAns.length>0):(wsAns>=0);
+  if(answered){
+    var ok=ansEq(wsAns,q.correctAnswer);
     var h='<div class="card" style="'+(ok?'background:var(--succ-l)':'background:var(--err-l)')+'">';
     h+='<div style="font-weight:700;font-size:15px">'+(ok?'✅ 正确！':'❌ 错误')+'</div>';
     h+='<div style="font-size:13px;margin-top:4px">'+q.question+'</div>';
     if(!ok){
-      h+='<div style="font-size:12px;color:var(--err)">你的答案：'+String.fromCharCode(65+wsAns)+'. '+q.options[wsAns]+'</div>';
-      h+='<div style="font-size:12px;color:var(--succ)">正确答案：'+String.fromCharCode(65+q.correctAnswer)+'. '+q.options[q.correctAnswer]+'</div>';
+      h+='<div style="font-size:12px;color:var(--err);margin-top:4px">你的答案：'+ansDetail(q,wsAns)+'</div>';
+      h+='<div style="font-size:12px;color:var(--succ);margin-top:2px">正确答案：'+corrDetail(q)+'</div>';
     }
     h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+q.explanation+'</div>';
     h+='<div style="margin-top:10px">';
@@ -509,30 +516,41 @@ function renderWSQuiz(){
     h+='</div></div>';
     document.getElementById('err-study').innerHTML=h;
   } else {
-    var h='<div style="font-size:12px;color:var(--t2);margin-bottom:6px">题目 '+((wsQIdx+1))+'/'+qs.length+'</div>';
+    var h='<div style="font-size:12px;color:var(--t2);margin-bottom:6px">题目 '+((wsQIdx+1))+'/'+qs.length+(multi?' · 多选（可多选）':' · 单选')+'</div>';
     h+='<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
     for(var i=0;i<q.options.length;i++){
-      h+='<div class="quiz-opt" onclick="pickWS('+i+')">';
+      var sel=multi?(wsSel&&wsSel.indexOf(i)>=0):(wsAns===i);
+      h+='<div class="quiz-opt'+(sel?' sel':'')+'" onclick="'+(multi?('toggleWS('+i+')'):('pickWS('+i+')'))+'">';
       h+='<span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+q.options[i]+'</span></div>';
     }
+    if(multi)h+='<button class="btn btn-p btn-f" style="margin-top:8px" onclick="confirmWS()">确认提交</button>';
     document.getElementById('err-study').innerHTML=h;
   }
 }
 function pickWS(ans){wsAns=ans;renderWSQuiz()}
 window.pickWS=pickWS;
+function toggleWS(ans){
+  if(!wsSel)wsSel=[];
+  var k=wsSel.indexOf(ans);
+  if(k>=0)wsSel.splice(k,1);else wsSel.push(ans);
+  renderWSQuiz();
+}
+window.toggleWS=toggleWS;
+function confirmWS(){wsAns=wsSel?wsSel.slice():[];wsSel=[];renderWSQuiz()}
+window.confirmWS=confirmWS;
 function markWS(si,qi,mastered){
   if(!S.wrongStudy[si])S.wrongStudy[si]={done:0,mastered:0,review:0,items:{}};
   S.wrongStudy[si].done++;
   if(mastered)S.wrongStudy[si].mastered++;else S.wrongStudy[si].review++;
   S.wrongStudy[si].items[qi]=mastered?'m':'r';
   SS(S);
-  wsQIdx++;wsAns=-1;
+  wsQIdx++;wsAns=-1;wsSel=[];
   renderWSQuiz();
 }
 window.markWS=markWS;
 
 // ====== DRILL (疯狂刷题) ======
-var drillActive=false;var drillQueue=[];var drillPtr=0;var drillAns=-1;var drillFrom='';var drillWsSet=0;
+var drillActive=false;var drillQueue=[];var drillPtr=0;var drillAns=-1;drillSel=[];var drillSel=[];var drillFrom='';var drillWsSet=0;
 function startDrill(from,si){
   drillFrom=from;drillQueue=[];
   if(from==='ws'){
@@ -548,7 +566,7 @@ function startDrill(from,si){
     }
   }
   if(!drillQueue.length){showT('没有可刷的题');return;}
-  drillActive=true;drillPtr=0;drillAns=-1;
+  drillActive=true;drillPtr=0;drillAns=-1;drillSel=[];
   document.getElementById('err-dyn').style.display=from==='err'?'block':'none';
   document.getElementById('err-study').style.display=from==='ws'?'block':'none';
   renderErr();
@@ -566,13 +584,15 @@ function renderDrill(){
     renderDrillInto(h);return;
   }
   var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;color:var(--t2)">🔥 疯狂刷题 · 剩余 '+drillQueue.length+' 题</span><span style="font-size:12px;color:var(--pri);cursor:pointer" onclick="endDrill()">✕ 退出</span></div>';
-  if(drillAns>=0){
-    var ok=drillAns===q.correctAnswer;
+  var multi=isMulti(q);
+  var answered=multi?(drillAns&&drillAns.length>0):(drillAns>=0);
+  if(answered){
+    var ok=ansEq(drillAns,q.correctAnswer);
     var h=head+'<div class="card" style="'+(ok?'background:var(--succ-l)':'background:var(--err-l)')+'">';
     h+='<div style="font-weight:700;font-size:15px">'+(ok?'✅ 答对了！':'❌ 答错了')+'</div>';
     h+='<div style="font-size:13px;margin-top:4px">'+q.question+'</div>';
-    h+='<div style="font-size:12px;color:'+(ok?'var(--succ)':'var(--err)')+';margin-top:4px">你的答案：'+String.fromCharCode(65+drillAns)+'. '+stripL(q.options[drillAns])+'</div>';
-    if(!ok)h+='<div style="font-size:12px;color:var(--succ)">正确答案：'+String.fromCharCode(65+q.correctAnswer)+'. '+stripL(q.options[q.correctAnswer])+'</div>';
+    h+='<div style="font-size:12px;color:'+(ok?'var(--succ)':'var(--err)')+';margin-top:4px">你的答案：'+ansDetail(q,drillAns)+'</div>';
+    if(!ok)h+='<div style="font-size:12px;color:var(--succ)">正确答案：'+corrDetail(q)+'</div>';
     if(q.explanation)h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">💡 '+q.explanation+'</div>';
     h+='<div style="margin-top:12px">';
     if(ok)h+='<button class="btn btn-g btn-f" onclick="drillCorrect()">✅ 已掌握，下一题 →</button>';
@@ -580,11 +600,13 @@ function renderDrill(){
     h+='</div></div>';
     renderDrillInto(h);
   }else{
-    var h=head+'<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
+    var h=head+(multi?'<div style="font-size:11px;color:var(--t3);margin-bottom:4px">⚠️ 多选题请逐个选择后点确认</div>':'')+'<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
     for(var i=0;i<q.options.length;i++){
-      h+='<div class="quiz-opt" onclick="pickDrill('+i+')">';
+      var sel=multi?(drillSel&&drillSel.indexOf(i)>=0):(drillAns===i);
+      h+='<div class="quiz-opt'+(sel?' sel':'')+'" onclick="'+(multi?('toggleDrill('+i+')'):('pickDrill('+i+')'))+'">';
       h+='<span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+stripL(q.options[i])+'</span></div>';
     }
+    if(multi)h+='<button class="btn btn-p btn-f" style="margin-top:8px" onclick="confirmDrill()">确认提交</button>';
     renderDrillInto(h);
   }
 }
@@ -594,11 +616,20 @@ function renderDrillInto(h){
 }
 function pickDrill(ans){drillAns=ans;renderDrill()}
 window.pickDrill=pickDrill;
+function toggleDrill(ans){
+  if(!drillSel)drillSel=[];
+  var k=drillSel.indexOf(ans);
+  if(k>=0)drillSel.splice(k,1);else drillSel.push(ans);
+  renderDrill();
+}
+window.toggleDrill=toggleDrill;
+function confirmDrill(){drillAns=drillSel?drillSel.slice():[];drillSel=[];renderDrill()}
+window.confirmDrill=confirmDrill;
 function drillCorrect(){
   var q=drillQueue[drillPtr];
   if(q&&q.src==='err')removeFromErrors(q.ref);
   drillQueue.splice(drillPtr,1);
-  drillAns=-1;
+  drillAns=-1;drillSel=[];
   if(drillPtr>=drillQueue.length)drillPtr=0;
   renderDrill();
 }
@@ -608,7 +639,7 @@ function drillWrong(){
   addToErrors(q);
   drillQueue.splice(drillPtr,1);
   drillQueue.push(q);
-  drillAns=-1;
+  drillAns=-1;drillSel=[];
   if(drillPtr>=drillQueue.length)drillPtr=0;
   renderDrill();
 }
@@ -627,7 +658,7 @@ function renderDashSilent(){
   var dc=0;for(var k in S.days)if(S.days[k]&&S.days[k].quizDone)dc++;
   var el=document.getElementById('s-errs');if(el)el.textContent=S.errors.length;
 }
-function endDrill(){drillActive=false;drillQueue=[];drillAns=-1;renderErr();}
+function endDrill(){drillActive=false;drillQueue=[];drillAns=-1;drillSel=[];renderErr();}
 window.endDrill=endDrill;
 
 // ====== BANK ======
