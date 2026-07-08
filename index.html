@@ -421,6 +421,7 @@ window.submitFeynman=submitFeynman;
 // ====== ERRORS ======
 var errTab='dyn';
 function swErrTab(t){
+  if(drillActive){showT('请先点✕退出疯狂刷题');return;}
   errTab=t;
   document.querySelectorAll('#err-tabs .tab-btn').forEach(function(b){b.classList.remove('on')});
   if(t==='dyn')document.querySelector('#err-tabs .tab-btn:first-child').classList.add('on');
@@ -431,13 +432,14 @@ function swErrTab(t){
 }
 window.swErrTab=swErrTab;
 function renderErr(){
+  if(drillActive){renderDrill();return;}
   if(errTab==='dyn')renderDynErr();
   else renderStudyErr();
 }
 function renderDynErr(){
   var errs=S.errors;
   if(!errs.length){document.getElementById('err-dyn').innerHTML='<div class="card" style="text-align:center;color:var(--t2)">暂无做题错题 🎉</div>';return}
-  var h='';
+  var h='<button class="btn btn-r btn-f" style="margin-bottom:10px" onclick="startDrill(\'err\')">🔥 疯狂刷题（'+errs.length+'题）</button>';
   for(var i=0;i<errs.length;i++){
     var e=errs[i];
     var ok=e.userAns===e.correctAns;
@@ -470,7 +472,8 @@ function renderStudyErr(){
       h+='<div style="font-size:12px;color:var(--t2)">'+s.description+'</div>';
       h+='<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div>';
       h+='<div style="font-size:11px;color:var(--t3)">进度 '+prog.done+'/'+s.questions.length+' · 已掌握 '+prog.mastered+'</div>';
-      h+='<button class="btn btn-p btn-s" style="margin-top:8px" onclick="openWS('+i+')">开始学习</button>';
+      h+='<button class="btn btn-p btn-s" style="margin-top:8px" onclick="openWS('+i+')">开始学习</button> ';
+      h+='<button class="btn btn-r btn-s" style="margin-top:8px" onclick="startDrill(\'ws\','+i+')">🔥 疯狂刷题</button>';
       h+='</div>';
     }
     document.getElementById('err-study').innerHTML=h;
@@ -527,6 +530,105 @@ function markWS(si,qi,mastered){
   renderWSQuiz();
 }
 window.markWS=markWS;
+
+// ====== DRILL (疯狂刷题) ======
+var drillActive=false;var drillQueue=[];var drillPtr=0;var drillAns=-1;var drillFrom='';var drillWsSet=0;
+function startDrill(from,si){
+  drillFrom=from;drillQueue=[];
+  if(from==='ws'){
+    drillWsSet=si;
+    var qs=COURSE_DATA.wrongAnswerSets[si].questions;
+    for(var i=0;i<qs.length;i++){
+      drillQueue.push({question:qs[i].question,options:qs[i].options,correctAnswer:qs[i].correctAnswer,explanation:qs[i].explanation,src:'ws',ref:si+'_'+(qs[i].qNum!=null?qs[i].qNum:i)});
+    }
+  }else{
+    for(var i=0;i<S.errors.length;i++){
+      var e=S.errors[i];
+      drillQueue.push({question:e.question,options:e.options,correctAnswer:e.correctAns,explanation:e.explanation,src:'err',ref:e.ref||('err_'+i)});
+    }
+  }
+  if(!drillQueue.length){showT('没有可刷的题');return;}
+  drillActive=true;drillPtr=0;drillAns=-1;
+  document.getElementById('err-dyn').style.display=from==='err'?'block':'none';
+  document.getElementById('err-study').style.display=from==='ws'?'block':'none';
+  renderErr();
+}
+window.startDrill=startDrill;
+function renderDrill(){
+  var q=drillQueue[drillPtr];
+  if(!q){
+    var h='<div class="card" style="background:var(--succ-l);text-align:center;padding:24px">';
+    h+='<div style="font-size:28px">🎉</div>';
+    h+='<div style="font-weight:800;color:var(--succ);font-size:17px;margin-top:6px">全部做对啦！</div>';
+    h+='<div style="font-size:13px;color:var(--t2);margin-top:6px">'+(drillFrom==='err'?'错题本已清空，全部掌握！':'这一轮你把题都答对了，已掌握 '+COURSE_DATA.wrongAnswerSets[drillWsSet].questions.length+' 题')+'</div>';
+    h+='<button class="btn btn-p btn-f" style="margin-top:14px" onclick="endDrill()">返回错题本</button>';
+    h+='</div>';
+    renderDrillInto(h);return;
+  }
+  var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:12px;color:var(--t2)">🔥 疯狂刷题 · 剩余 '+drillQueue.length+' 题</span><span style="font-size:12px;color:var(--pri);cursor:pointer" onclick="endDrill()">✕ 退出</span></div>';
+  if(drillAns>=0){
+    var ok=drillAns===q.correctAnswer;
+    var h=head+'<div class="card" style="'+(ok?'background:var(--succ-l)':'background:var(--err-l)')+'">';
+    h+='<div style="font-weight:700;font-size:15px">'+(ok?'✅ 答对了！':'❌ 答错了')+'</div>';
+    h+='<div style="font-size:13px;margin-top:4px">'+q.question+'</div>';
+    h+='<div style="font-size:12px;color:'+(ok?'var(--succ)':'var(--err)')+';margin-top:4px">你的答案：'+String.fromCharCode(65+drillAns)+'. '+stripL(q.options[drillAns])+'</div>';
+    if(!ok)h+='<div style="font-size:12px;color:var(--succ)">正确答案：'+String.fromCharCode(65+q.correctAnswer)+'. '+stripL(q.options[q.correctAnswer])+'</div>';
+    if(q.explanation)h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">💡 '+q.explanation+'</div>';
+    h+='<div style="margin-top:12px">';
+    if(ok)h+='<button class="btn btn-g btn-f" onclick="drillCorrect()">✅ 已掌握，下一题 →</button>';
+    else h+='<button class="btn btn-r btn-f" onclick="drillWrong()">🔄 记到错题本，继续刷 →</button>';
+    h+='</div></div>';
+    renderDrillInto(h);
+  }else{
+    var h=head+'<div class="card"><div style="font-size:14px;font-weight:700">'+q.question+'</div></div>';
+    for(var i=0;i<q.options.length;i++){
+      h+='<div class="quiz-opt" onclick="pickDrill('+i+')">';
+      h+='<span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+stripL(q.options[i])+'</span></div>';
+    }
+    renderDrillInto(h);
+  }
+}
+function renderDrillInto(h){
+  var el=drillFrom==='err'?document.getElementById('err-dyn'):document.getElementById('err-study');
+  el.innerHTML=h;
+}
+function pickDrill(ans){drillAns=ans;renderDrill()}
+window.pickDrill=pickDrill;
+function drillCorrect(){
+  var q=drillQueue[drillPtr];
+  if(q&&q.src==='err')removeFromErrors(q.ref);
+  drillQueue.splice(drillPtr,1);
+  drillAns=-1;
+  if(drillPtr>=drillQueue.length)drillPtr=0;
+  renderDrill();
+}
+window.drillCorrect=drillCorrect;
+function drillWrong(){
+  var q=drillQueue[drillPtr];
+  addToErrors(q);
+  drillQueue.splice(drillPtr,1);
+  drillQueue.push(q);
+  drillAns=-1;
+  if(drillPtr>=drillQueue.length)drillPtr=0;
+  renderDrill();
+}
+window.drillWrong=drillWrong;
+function addToErrors(q){
+  if(!S.errors)S.errors=[];
+  for(var i=0;i<S.errors.length;i++){if(S.errors[i].ref===q.ref)return}
+  S.errors.push({src:q.src,ref:q.ref,userAns:-1,correctAns:q.correctAnswer,question:q.question,options:q.options,explanation:q.explanation,date:todayStr()});
+  SS(S);renderDashSilent();
+}
+function removeFromErrors(ref){
+  if(!S.errors)return;
+  for(var i=0;i<S.errors.length;i++){if(S.errors[i].ref===ref){S.errors.splice(i,1);SS(S);renderDashSilent();return}}
+}
+function renderDashSilent(){
+  var dc=0;for(var k in S.days)if(S.days[k]&&S.days[k].quizDone)dc++;
+  var el=document.getElementById('s-errs');if(el)el.textContent=S.errors.length;
+}
+function endDrill(){drillActive=false;drillQueue=[];drillAns=-1;renderErr();}
+window.endDrill=endDrill;
 
 // ====== BANK ======
 function renderBank(){
