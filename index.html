@@ -519,8 +519,12 @@ function renderWSQuiz(){
       h+='<div style="font-size:12px;color:var(--err);margin-top:4px">你的答案：'+ansDetail(q,wsAns)+'</div>';
       h+='<div style="font-size:12px;color:var(--succ);margin-top:2px">正确答案：'+corrDetail(q)+'</div>';
       var _ref=wsIdx+'_'+(q.qNum!=null?q.qNum:wsQIdx);
-      addToErrors({src:'ws',ref:_ref,correctAnswer:q.correctAnswer,question:q.question,options:q.options,explanation:q.explanation});
-      h+='<div style="font-size:11px;color:var(--t3);margin-top:6px">🔁 已自动加入错题本 — 去「错题 → 🔥疯狂刷题」反复刷到全对</div>';
+      var _inErr=false;for(var _i=0;_i<(S.errors?S.errors.length:0);_i++){if(S.errors[_i].ref===_ref){_inErr=true;break}}
+      if(!_inErr){
+        h+='<div style="margin-top:8px"><button class="btn btn-r btn-s" onclick="wsAddError('+wsIdx+','+wsQIdx+')">🔁 我要记 → 加入做题错题</button></div>';
+      }else{
+        h+='<div style="font-size:11px;color:var(--t3);margin-top:6px">✓ 已在做题错题中 — 去「错题 → 🔥疯狂刷题」刷到全对</div>';
+      }
     }
     h+='<div style="font-size:12px;color:var(--t2);margin-top:4px">'+q.explanation+'</div>';
     h+='<div style="margin-top:10px">';
@@ -565,17 +569,31 @@ function markWS(si,qi,mastered){
   renderWSQuiz();
 }
 window.markWS=markWS;
+function wsAddError(si,qi){
+  var q=COURSE_DATA.wrongAnswerSets[si].questions[qi];
+  addToErrors({src:'ws',ref:si+'_'+(q.qNum!=null?q.qNum:qi),correctAnswer:q.correctAnswer,question:q.question,options:q.options,explanation:q.explanation});
+  showT('🔁 已加入做题错题');
+  renderWSQuiz();
+}
+window.wsAddError=wsAddError;
 
 // ====== DRILL (疯狂刷题) ======
-var drillActive=false;var drillQueue=[];var drillPtr=0;var drillAns=-1;drillSel=[];var drillSel=[];var drillFrom='';var drillWsSet=0;
+var drillActive=false;var drillQueue=[];var drillPtr=0;var drillAns=-1;drillSel=[];var drillSel=[];var drillFrom='';var drillWsSet=0;var drillStartCount=0;
 function startDrill(from,si){
   drillFrom=from;drillQueue=[];
   if(from==='ws'){
     drillWsSet=si;
-    var qs=COURSE_DATA.wrongAnswerSets[si].questions;
-    for(var i=0;i<qs.length;i++){
-      drillQueue.push({question:qs[i].question,options:qs[i].options,correctAnswer:qs[i].correctAnswer,explanation:qs[i].explanation,src:'ws',ref:si+'_'+(qs[i].qNum!=null?qs[i].qNum:i)});
+    var _pre=si+'_';
+    var _pool=S.errors||[];
+    var _found=0;
+    for(var i=0;i<_pool.length;i++){
+      if(_pool[i].ref&&_pool[i].ref.indexOf(_pre)===0){
+        var e=_pool[i];
+        drillQueue.push({question:e.question,options:e.options,correctAnswer:e.correctAns,explanation:e.explanation,src:'ws',ref:e.ref});
+        _found++;
+      }
     }
+    if(!_found){showT('这套还没有「我要记」的错题，先去错题集学习标记吧');return;}
   }else{
     for(var i=0;i<S.errors.length;i++){
       var e=S.errors[i];
@@ -583,6 +601,7 @@ function startDrill(from,si){
     }
   }
   if(!drillQueue.length){showT('没有可刷的题');return;}
+  drillStartCount=drillQueue.length;
   drillActive=true;drillPtr=0;drillAns=-1;drillSel=[];
   document.getElementById('err-dyn').style.display=from==='err'?'block':'none';
   document.getElementById('err-study').style.display=from==='ws'?'block':'none';
@@ -595,7 +614,7 @@ function renderDrill(){
     var h='<div class="card" style="background:var(--succ-l);text-align:center;padding:24px">';
     h+='<div style="font-size:28px">🎉</div>';
     h+='<div style="font-weight:800;color:var(--succ);font-size:17px;margin-top:6px">全部做对啦！</div>';
-    h+='<div style="font-size:13px;color:var(--t2);margin-top:6px">'+(drillFrom==='err'?'错题本已清空，全部掌握！':'这一轮你把题都答对了，已掌握 '+COURSE_DATA.wrongAnswerSets[drillWsSet].questions.length+' 题')+'</div>';
+    h+='<div style="font-size:13px;color:var(--t2);margin-top:6px">'+(drillFrom==='err'?'错题本已清空，全部掌握！':'这一轮你把 '+drillStartCount+' 道错题都答对了！')+'</div>';
     h+='<button class="btn btn-p btn-f" style="margin-top:14px" onclick="endDrill()">返回错题本</button>';
     h+='</div>';
     renderDrillInto(h);return;
@@ -644,7 +663,7 @@ function confirmDrill(){drillAns=drillSel?drillSel.slice():[];drillSel=[];render
 window.confirmDrill=confirmDrill;
 function drillCorrect(){
   var q=drillQueue[drillPtr];
-  if(q&&q.src==='err')removeFromErrors(q.ref);
+  if(q)removeFromErrors(q.ref);
   drillQueue.splice(drillPtr,1);
   drillAns=-1;drillSel=[];
   if(drillPtr>=drillQueue.length)drillPtr=0;
