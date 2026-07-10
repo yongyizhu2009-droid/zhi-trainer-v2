@@ -530,7 +530,9 @@ function renderWSQuiz(){
     h+='<div style="margin-top:10px">';
     h+='<button class="btn btn-g btn-s" onclick="markWS('+wsIdx+','+wsQIdx+',1)">✅ 已掌握</button> ';
     h+='<button class="btn btn-o btn-s" onclick="markWS('+wsIdx+','+wsQIdx+',0)">🔄 需复习</button>';
-    h+='</div></div>';
+    h+='</div>';
+    h+='<div style="font-size:11px;color:var(--t3);margin-top:6px">⚠️ 这里的「已掌握/需复习」只记录学习进度，<b>不会移出做题错题</b>；题目会一直留在错题里，要到「🔥疯狂刷题」真正做对才移除。</div>';
+    h+='</div>';
     document.getElementById('err-study').innerHTML=h;
   } else {
     var h='<div style="font-size:12px;color:var(--t2);margin-bottom:6px">题目 '+((wsQIdx+1))+'/'+qs.length+(multi?' · 多选（可多选）':' · 单选')+'</div>';
@@ -560,10 +562,8 @@ function markWS(si,qi,mastered){
   S.wrongStudy[si].done++;
   if(mastered)S.wrongStudy[si].mastered++;else S.wrongStudy[si].review++;
   S.wrongStudy[si].items[qi]=mastered?'m':'r';
-  if(mastered){
-    var _qq=COURSE_DATA.wrongAnswerSets[si].questions[qi];
-    removeFromErrors(si+'_'+(_qq.qNum!=null?_qq.qNum:qi));
-  }
+  // 注意：错题集学习里标记「已掌握/需复习」只记录学习进度，
+  // 不移除做题错题——题目必须到「🔥疯狂刷题」里真正做对才会移出（避免还没刷就被删）。
   SS(S);
   wsQIdx++;wsAns=-1;wsSel=[];
   renderWSQuiz();
